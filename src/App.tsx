@@ -1,4 +1,4 @@
-import { KeyboardEvent, useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import words from './wordList.json'
 import { HangmanDrawing } from "./HangmanDrawing"
 import { HangmanWord } from "./HangmanWord"
@@ -6,15 +6,16 @@ import { Keyboard } from "./Keyboard"
 
 function App() {
 
-  const [wordToGuess, setWordToGuess] = useState<string>(() => {
-    return words[Math.floor(Math.random() * words.length)]
-  })
-
+  const [wordToGuess, setWordToGuess] = useState<string>('')
   const [guessedLetters, setGuessedLetters] = useState<string[]>([])
   const incorrectLetters = guessedLetters.filter(letter => !wordToGuess.includes(letter))
   const isLoser = incorrectLetters.length >= 6
   const isWinner = wordToGuess.split('').every(letter => guessedLetters.includes(letter))
 
+
+  useEffect(() => {
+    setWordToGuess(words[Math.floor(Math.random() * words.length)])
+  }, [])
 
   const addGuessedLetter = useCallback((letter: string) => {
     if(guessedLetters.includes(letter) || isLoser || isWinner) return
@@ -22,7 +23,7 @@ function App() {
   }, [guessedLetters, isWinner, isLoser])
 
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
+    const handler = (e: WindowEventMap['keydown']) => {
       const key = e.key
       const reg = RegExp(/^[a-z]+$/);
       if(!reg.exec(key)) return
@@ -32,10 +33,10 @@ function App() {
       addGuessedLetter(key)
     }
 
-    document.addEventListener('keypress', handler)
+    document.addEventListener('keydown', handler)
 
     return () => {
-      document.removeEventListener('keypress', handler)
+      document.removeEventListener('keydown', handler)
     }
   }, [guessedLetters])
 
